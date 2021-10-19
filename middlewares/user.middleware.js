@@ -55,7 +55,7 @@ module.exports = {
 
     isUserBodyValid: (req, res, next) => {
         try {
-            const { error, value } = userValidator.createUserValidator.validate(req.body);
+            const {error, value} = userValidator.createUserValidator.validate(req.body);
 
             if (error) {
                 throw new ErrorHandler(errors.NOT_VALID_BODY.message, errors.NOT_VALID_BODY.code);
@@ -105,7 +105,7 @@ module.exports = {
 
     checkUserRoles: (roleArr = []) => (req, res, next) => {
         try {
-            const { role } = req.user;
+            const {role} = req.user;
 
             if (!roleArr.includes(role)) {
                 throw new ErrorHandler(errors.FORBIDDEN_ERR.message, errors.FORBIDDEN_ERR.code);

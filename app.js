@@ -5,14 +5,14 @@ require('dotenv').config();
 
 const {authRouter, userRouter} = require('./routes');
 const {INTERNAL_SERVER_ERROR} = require('./errors');
-const { MONGO_CONNECT_URL, PORT } = require('./configs/config');
+const {MONGO_CONNECT_URL, PORT} = require('./configs/config');
 
 const app = express();
 
 mongoose.connect(MONGO_CONNECT_URL);
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
 
 app.use('/users', userRouter);
 app.use('/auth', authRouter);

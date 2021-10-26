@@ -38,3 +38,4 @@ const updateUserValidator = Joi.object({
 });
 
 module.exports = {createUserValidator, updateUserValidator};
+

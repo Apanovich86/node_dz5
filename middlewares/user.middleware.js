@@ -1,11 +1,16 @@
-const User = require('../dataBase/User');
+const {User, O_Auth, ActionToken} = require('../dataBase');
+const {jwtService} = require('../service');
+
+const {AUTHORIZATION} = require('../configs/constants');
+const tokenTypeEnum = require('../configs/token-type');
 const {ErrorHandler, errors} = require('../errors');
-const {authValidator, userValidator} = require('../validators/user.validator');
+const {compare} = require('../service/password.service');
+const {authValidator} = require('../validators');
 
 module.exports = {
     isAuthBodyValid: (req, res, next) => {
         try {
-            const {error, value} = authValidator.validate(req.body);
+            const {error, value} = authValidator.authValidator.validate(req.body);
 
             if (error) {
                 throw new ErrorHandler(errors.NOT_VALID_BODY.message, errors.NOT_VALID_BODY.code);
@@ -53,9 +58,9 @@ module.exports = {
         }
     },
 
-    isUserBodyValid: (req, res, next) => {
+    isUserBodyValid: (validator) => (req, res, next) => {
         try {
-            const {error, value} = userValidator.createUserValidator.validate(req.body);
+            const {error, value} = validator.validate(req.body);
 
             if (error) {
                 throw new ErrorHandler(errors.NOT_VALID_BODY.message, errors.NOT_VALID_BODY.code);
@@ -87,22 +92,6 @@ module.exports = {
         }
     },
 
-    isUpdateUserValid: (req, res, next) => {
-        try {
-            const {error, value} = userValidator.updateUserValidator.validate(req.body);
-
-            if (error) {
-                throw new ErrorHandler(error.details[0].message, 400);
-            }
-
-            req.body = value;
-
-            next();
-        } catch (e) {
-            next(e);
-        }
-    },
-
     checkUserRoles: (roleArr = []) => (req, res, next) => {
         try {
             const {role} = req.user;
@@ -116,4 +105,81 @@ module.exports = {
             next(e);
         }
     },
+
+    checkAccessToken: async (req, res, next) => {
+        try {
+            const token = req.get(AUTHORIZATION);
+
+            if (!token) {
+                throw new ErrorHandler(errors.INVALID_TOKEN.message, errors.INVALID_TOKEN.code);
+            }
+
+            await jwtService.verifyToken(token);
+
+            const tokenResponse = await O_Auth.findOne({access_token: token}).populate('user_id');
+
+            if (!tokenResponse) {
+                throw new ErrorHandler(errors.INVALID_TOKEN.message, errors.INVALID_TOKEN.code);
+            }
+
+            req.user = tokenResponse.user_id;
+
+            next();
+        } catch (e) {
+            next(e);
+        }
+    },
+
+    checkRefreshToken: async (req, res, next) => {
+        try {
+            const token = req.get(AUTHORIZATION);
+
+            if (!token) {
+                throw new ErrorHandler(errors.INVALID_TOKEN.message, errors.INVALID_TOKEN.code);
+            }
+
+            await jwtService.verifyToken(token, tokenTypeEnum.REFRESH);
+
+            const tokenResponse = await O_Auth.findOne({refresh_token: token}).populate('user_id');
+
+            if (!tokenResponse) {
+                throw new ErrorHandler(errors.INVALID_TOKEN.message, errors.INVALID_TOKEN.code);
+            }
+
+            await O_Auth.deleteOne({refresh_token: token});
+
+            req.user = tokenResponse.user_id;
+
+            next();
+        } catch (e) {
+            next(e);
+        }
+    },
+
+    checkActionToken: (tokenType) => async (req, res, next) => {
+        try {
+            const token = req.get(AUTHORIZATION);
+
+            if (!token) {
+                throw new ErrorHandler(errors.INVALID_TOKEN.message, errors.INVALID_TOKEN.code);
+            }
+
+            await jwtService.verifyToken(token, tokenType);
+
+            const tokenResponse = await ActionToken.findOne({token});
+
+            if (!tokenResponse) {
+                throw new ErrorHandler(errors.INVALID_TOKEN.message, errors.INVALID_TOKEN.code);
+            }
+
+            await ActionToken.deleteOne({token});
+
+            req.user = tokenResponse.user_id;
+
+            next();
+        } catch (err) {
+            next(err);
+        }
+    }
 };
+

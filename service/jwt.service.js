@@ -17,6 +17,16 @@ module.exports = {
         };
     },
 
+    verifyToken: async (token, tokenType = tokenTypeEnum.ACCESS) => {
+        try {
+            const secret = tokenType === tokenTypeEnum.ACCESS ? JWT_ACCESS_SECRET : JWT_REFRESH_SECRET;
+            await jwt.verify(token, secret);
+
+        } catch (e) {
+            throw new ErrorHandler(INVALID_TOKEN.message, INVALID_TOKEN.code);
+        }
+    },
+
     createActionToken: (tokenType) => {
         let secretWord;
 
@@ -33,15 +43,4 @@ module.exports = {
 
         return jwt.sign({}, secretWord, {expiresIn: '1d'});
     },
-
-    verifyToken: async (token, tokenType = tokenTypeEnum.ACCESS) => {
-        try {
-            const secret = tokenType === tokenTypeEnum.ACCESS ? JWT_ACCESS_SECRET : JWT_REFRESH_SECRET;
-            await jwt.verify(token, secret);
-
-        } catch (e) {
-            throw new ErrorHandler(INVALID_TOKEN.message, INVALID_TOKEN.code);
-        }
-    },
-
 };

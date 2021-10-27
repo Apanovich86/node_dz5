@@ -1,11 +1,12 @@
 const {userNormalizator} = require('../util/user.util');
 const {O_Auth, User} = require('../dataBase');
 const userUtil = require('../util/user.util');
-const {ErrorHandler, errors} = require('../errors/ErrorHandler');
+const {ErrorHandler, errors } = require('../errors/ErrorHandler');
 const {jwtService, emailService, passwordService} = require('../service');
 const ActionToken = require('../dataBase/ActionToken');
 const ActionTokenTypeEnum = require('../configs/token-type');
 const EmailActionEnum = require('../configs/email-action.enum');
+const {AUTHORIZATION} = require('../configs/constants');
 const {URL_FROM_FRONT_END, PASSWORD_FORGOT_URL, NEW_PASSWORD} = require('../configs');
 
 module.exports = {
@@ -65,15 +66,15 @@ module.exports = {
 
     sendMailForgotPassword: async (req, res, next) => {
         try {
-            const {email} = req.body;
+            const { email } = req.body;
 
-            const user = await User.findOne({email});
+            const user = await User.findOne({ email });
 
-            if (!user) {
+            if(!user) {
                 throw new ErrorHandler(errors.USER_NOT_FOUND.message, errors.USER_NOT_FOUND.code);
             }
 
-            const actionToken = jwtService.createActionToken(ActionTokenTypeEnum.FORGOT_PASSWORD);
+            const actionToken = jwtService.generateActionToken(ActionTokenTypeEnum.FORGOT_PASSWORD);
 
             await ActionToken.create({
                 token: actionToken,
@@ -96,13 +97,21 @@ module.exports = {
             const {password} = req.body;
             const {_id, email, name} = req.user;
 
+            const actionToken = req.get(AUTHORIZATION);
+
+            if (!actionToken) {
+                throw new ErrorHandler(errors.INVALID_TOKEN.message, errors.INVALID_TOKEN.code);
+            }
+
+            await jwtService.verifyToken(actionToken);
+
             const hashedPassword = await passwordService.hash(password);
 
-            await User.findByIdAndUpdate(_id, {password: hashedPassword});
+            await User.findByIdAndUpdate(_id, { password: hashedPassword });
 
-            await emailService.sendMail(email, NEW_PASSWORD, {userName: name, password});
+            await emailService.sendMail(email, NEW_PASSWORD, { userName: name, password });
 
-            await O_Auth.deleteMany({user_id: _id});
+            await O_Auth.deleteMany({ user_id: _id });
 
             res.json('Good');
 

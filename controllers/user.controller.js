@@ -1,6 +1,6 @@
 const {UPDATE_USER, DELETE_USER} = require('../configs');
 const {User, O_Auth, ActionToken} = require('../dataBase');
-const {emailService, passwordService, jwtService} = require('../service');
+const {emailService, passwordService, jwtService, userService} = require('../service');
 const userUtil = require('../util/user.util');
 const emailTemplatesEnum = require('../configs/email-action.enum');
 const {ACTIVATE_USER_TOKEN} = require('../configs/token-type');
@@ -8,7 +8,7 @@ const {ACTIVATE_USER_TOKEN} = require('../configs/token-type');
 module.exports = {
     getUsers: async (req, res, next) => {
         try {
-            const users = await User.find({}).lean();
+            const users = await userService.getAllUsers(req.query);
 
             const normUsers = users.map(value => userUtil.userNormalizator(value));
 
@@ -18,11 +18,15 @@ module.exports = {
         }
     },
 
-    getUserById: async (req, res, next) => {
+    getUserById: (req, res, next) => {
         try {
-            const user = await User.find({_id: req.params.id}).select('-password');
+            const user = req.user;
 
-            res.json(user);
+            User.testStatic(222);
+
+            const normUsers = userUtil.userNormalizator(user);
+
+            res.json(normUsers);
         } catch (e) {
             next(e);
         }
@@ -58,9 +62,9 @@ module.exports = {
 
             const updateUser = await User.findByIdAndUpdate(user_id, {name}, {new: true});
 
-            await emailService.sendMail(req.body.email, UPDATE_USER, {userName: name});
+            await emailService.sendMail(req.body.email, UPDATE_USER, { userName: name });
 
-            const normUsers = userUtil.userNormalizator(updateUser);
+            const normUsers = userUtil.userNormalizator(updateUser.toObject());
 
             res.json(normUsers);
         } catch (e) {
@@ -71,11 +75,11 @@ module.exports = {
     deleteUser: async (req, res, next) => {
         try {
             const {user_id} = req.params;
-            const delUser = await User.deleteOne({_id: user_id});
+            const delUser = await User.deleteOne({ _id: user_id });
 
             await O_Auth.deleteMany({user_id: user._id});
 
-            await emailService.sendMail(req.body.email, DELETE_USER, {userName: name});
+            await emailService.sendMail(req.body.email, DELETE_USER, { userName: name });
 
             const normUsers = userUtil.userNormalizator(delUser.toObject());
 

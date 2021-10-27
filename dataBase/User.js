@@ -1,7 +1,7 @@
 const {Schema, model} = require('mongoose');
 
 const {userRoles} = require('../configs');
-const {passwordService} = require('../service');
+const {passwordService} = require('../service/password.service');
 
 const userSchema = new Schema({
     name: {
@@ -27,7 +27,7 @@ const userSchema = new Schema({
     }
 }, {timestamps: true, toObject: {virtuals: true}, toJSON: {virtuals: true}});
 
-userSchema.virtual('fullName').get(function () {
+userSchema.virtual('fullName').get(function() {
     return `${this.name} ${this.role} HA-HA`;
 });
 

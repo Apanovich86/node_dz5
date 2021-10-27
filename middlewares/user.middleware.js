@@ -166,13 +166,13 @@ module.exports = {
 
             await jwtService.verifyToken(token, tokenType);
 
-            const tokenResponse = await ActionToken.findOne({token});
+            const tokenResponse = await ActionToken.findOne({ token });
 
             if (!tokenResponse) {
                 throw new ErrorHandler(errors.INVALID_TOKEN.message, errors.INVALID_TOKEN.code);
             }
 
-            await ActionToken.deleteOne({token});
+            await ActionToken.deleteOne({ token });
 
             req.user = tokenResponse.user_id;
 

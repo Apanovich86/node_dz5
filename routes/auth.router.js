@@ -19,4 +19,5 @@ authRouter.put('/password/forgot',
     authController.setNewPasswordAfterForgot
 );
 
+
 module.exports = authRouter;

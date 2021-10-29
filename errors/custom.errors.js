@@ -44,5 +44,10 @@ module.exports = {
         code: 500
     },
 
+    NOT_SUPPORTED_ERR: {
+        message: 'Not supported format',
+        code: 400
+    },
+
     INTERNAL_SERVER_ERROR: 500
 };

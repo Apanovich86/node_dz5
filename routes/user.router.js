@@ -1,7 +1,7 @@
 const router = require('express').Router();
 
 const {userController} = require('../controllers');
-const userMiddleware = require('../middlewares/user.middleware');
+const {fileMiddleware, userMiddleware} = require('../middlewares');
 const {userRoles} = require('../configs');
 const {createUserValidator, updateUserValidator} = require('../validators');
 
@@ -12,6 +12,7 @@ router.get(
 router.post(
     '/',
     userMiddleware.isUserBodyValid(createUserValidator),
+    fileMiddleware.checkUserAvatar,
     userMiddleware.createUserMiddleware,
     userController.createUser
 );

@@ -1,7 +1,7 @@
 const {Schema, model} = require('mongoose');
 
-const {userRoles} = require('../configs');
-const {passwordService} = require('../service');
+const {userRoles, modelNamesEnum} = require('../configs');
+const {passwordService} = require('../service/password.service');
 
 const userSchema = new Schema({
     name: {
@@ -24,10 +24,13 @@ const userSchema = new Schema({
         type: String,
         default: userRoles.USER,
         enum: Object.values(userRoles)
+    },
+    avatar: {
+        type: String
     }
 }, {timestamps: true, toObject: {virtuals: true}, toJSON: {virtuals: true}});
 
-userSchema.virtual('fullName').get(function () {
+userSchema.virtual('fullName').get(function() {
     return `${this.name} ${this.role} HA-HA`;
 });
 
@@ -57,4 +60,4 @@ userSchema.statics = {
     }
 };
 
-module.exports = model('user', userSchema);
+module.exports = model(modelNamesEnum.USER, userSchema);

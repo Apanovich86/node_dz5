@@ -1,0 +1,247 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "June-2021",
+    "version": "1.0",
+    "description": "This is Hello world",
+    "contact": {
+      "email": "anna@gmail.com",
+      "name": "Anna"
+    }
+  },
+  "paths": {
+    "/users": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "createUser",
+        "description": "This is how to create user1",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "body",
+            "default": "Dimas",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "email",
+            "in": "body",
+            "default": "example@gmail",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "password",
+            "in": "body",
+            "default": "Hello_World!1",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User was created",
+            "schema": {
+              "$ref": "#/definitions/singleUser"
+            }
+          },
+          "400": {
+            "description": "Just an error",
+            "schema": {
+              "properties": {
+                "msg": {
+                  "type": "string",
+                  "example": "Somthing went wrong"
+                },
+                "code": {
+                  "type": "number",
+                  "example": 400
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "getAllUsers",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "This is `access_token` from POST /auth endpoint",
+            "default": "1",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "default": 1,
+            "required": false,
+            "type": "number"
+          },
+          {
+            "name": "perPage",
+            "in": "query",
+            "default": 20,
+            "required": false,
+            "type": "number"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User was created",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/singleUser"
+              }
+            }
+          },
+          "400": {
+            "description": "Just an error",
+            "schema": {
+              "$ref": "#/definitions/commonError"
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get user by id",
+        "operationId": "getUserById",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The operation was successful",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/singleUser"
+              }
+            }
+          },
+          "404": {
+            "description": "NOT_FOUND_USER_BY_ID"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "UpdateUser",
+        "description": "Change name user",
+        "responses": {
+          "200": {
+            "description": "The operation was successful"
+          },
+          "400": {
+            "description": "Body not valid"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "default": "",
+            "required": true,
+            "type": "string",
+            "description": "MongoDB ID"
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "in": "header"
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Delete User",
+        "operationId": "deleteUser",
+        "description": "This is how to delete user at DB use property ID",
+        "parameters": [
+          {
+            "in": "path",
+            "required": true,
+            "name": "user_id",
+            "type": "string",
+            "default": "USER_ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The operation was successful"
+          },
+          "404": {
+            "description": "Not found user by id"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "singleUser": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "qwerty1-",
+          "description": "MongoDB ID"
+        },
+        "email": {
+          "type": "string",
+          "example": "example@email.com"
+        },
+        "name": {
+          "type": "string",
+          "example": "Dimasik"
+        }
+      }
+    },
+    "commonError": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "qwerty1-",
+          "description": "MongoDB ID"
+        },
+        "email": {
+          "type": "string",
+          "example": "example@email.com"
+        },
+        "name": {
+          "type": "string",
+          "example": "Dimasik"
+        }
+      }
+    }
+  }
+}
